@@ -26,6 +26,11 @@ void PID::UpdateError(double cte) {
 	i_error += cte;
 	d_error = cte - old_cte;
 	old_cte = cte;
+
+	if(step < target_steps && step > 100){
+		twiddle_error += cte * cte;
+	}
+	step++;
 }
 
 double PID::TotalError() {
@@ -43,6 +48,84 @@ double PID::acceleration(double cte, double speed, double angle){
 	// }
 
 	cout << "cte: " << cte << "  | angle : " << angle << "   | speed : " << speed << endl;
-	acc = - ((fabs(cte)) / 3 ) - ((fabs(angle)) / 100) - ((speed - 70) / 100) + 0.2;
+	acc = - ((fabs(cte)) / 3 ) - ((fabs(angle)) / 100) - ((speed - 80) / 100) + 0.2;
 	return acc;
 }
+
+void PID::twiddle(){
+	double err = twiddle_error / target_steps;
+
+	if(!twd_init){
+		best_error = err;
+		dp = {Kp/4, Ki/4, 0.1};
+		twiddle_error = 0;
+		step = 0;
+		twd_init = true;
+		cout << "finish init" << endl;
+		cout << "KP, Ki, Kd: "<<"(" << Kp << ", " << Ki << ", " << Kd << ")" << "  error: " << best_error << endl;
+	}
+	if(step < target_steps) {
+		for (int i =0; i < 3; i++)
+			switch(i){
+				case 0:
+					Kp += dp[i];
+					break;
+				case 1:
+					Ki += dp[i];
+					break;
+				case 2:
+					Kd += dp[i];
+			if (err < best_error){
+				best_error = err;
+				dp[i] *= 1.1;
+				cout << "better: " << endl;
+				cout << "KP, Ki, Kd: "<<"(" << Kp << ", " << Ki << ", " << Kd << ")" << "  error: " << best_error << endl;
+			}else{
+				switch(i){
+					case 0:
+						Kp -= 2 * dp[i];
+						break;
+					case 1:
+						Ki -= 2 * dp[i];
+						break;
+					case 2:
+						Kd -= 2 * dp[i];
+				}
+				dp[i] *=0.9;
+			}
+
+		}
+	cout << "step: " << step << endl;
+	cout << "KP, Ki, Kd: "<<"(" << Kp << ", " << Ki << ", " << Kd << ")" << "  error: " << best_error << endl;
+
+	}
+}
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

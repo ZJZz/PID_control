@@ -1,5 +1,7 @@
 #ifndef PID_H
 #define PID_H
+#include <vector>
+#include <iostream>
 
 class PID {
 public:
@@ -16,6 +18,20 @@ public:
   double Kp;
   double Ki;
   double Kd;
+  
+  /*
+  * twiddle 
+  */
+  int step;
+  int target_steps = 400;
+
+  double twiddle_error;
+  double best_error;
+
+  std::vector<double> dp;
+
+  bool twd_init = false;
+
 
   /*
   * Constructor
@@ -46,6 +62,8 @@ public:
   * control the accelartion.
    */
   double acceleration(double cte, double speed, double angle);
+
+  void twiddle();
 };
 
 #endif /* PID_H */
