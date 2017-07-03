@@ -1,6 +1,39 @@
 # CarND-Controls-PID
 Self-Driving Car Engineer Nanodegree Program
 
+After implemented the PID control equation, we limit the steer angle between -1 to 1, the car should move. And then we only need to change the Kp, Ki, Kd variable to the right value to keep the car in the lane.
+Kp is the reaction with the CTE, if Kp is bigger, it reacts faster to the changing of CTE
+Ki is the correction for bias of the system (car), that the center of the road to calcuate CTE maybe off.
+Kd is smoothing for the over oscillation of the car. The bigger Kd, oscillation smooth better.
+```c
+
+double PID::TotalError() {
+
+ double steer = -Kp * p_error - Ki * i_error - Kd * d_error;
+ if (steer > 1.0) {steer = 1;}
+ if (steer < -1.0){steer = -1;}
+ return steer; 
+}
+```
+since one of the requirement for this project is keep the car with in the road.
+so, before jump into the tuning those three variable, I choose to look at the throttle_value which is similar to acceleration of the car. After I play with this value few time. I relized as long as I keep the throttle_value around 0.1, with small number for Kp, Ki and Kd. The car can slowly drive through the whole round. But this is not what we looking for. 
+we want to see the car driving, not slowly roll over the whole circle. And this gives me the idea for controlling the acceleration.
+```c
+double PID::acceleration(double cte, double speed, double angle){
+	double acc;
+	cout << "cte: " << cte << "  | angle : " << angle << "   | speed : " << speed << endl;
+	acc = - ((fabs(cte)) / 3 ) - ((fabs(angle)) / 100) - ((speed - 80) / 100) + 0.2;
+	return acc;
+}
+
+```
+This idea is to let the car slow down when it need to turn or off the center too much, this gives the car more time to react and do not run out of the road for most of the time. 
+After manually change the variable i choose kp = 0.22; ki = 0.0004; kd = 4.5; the average speed increasing from 20mph to 40mph. The idea behind choose the variable is adjusting Kp value so that the car react to change of CTE, but not too much. if Kp is too big, it will keep oscillate every time, CTE changed little. Also to reduce the oscillation, I increased Kd.
+if Kp is too small, it will not turn on time and it will miss the turn, but since i have the acceleration formula. it will reduce the acceleration to negative and stop before it runs out of the road. For Ki, i just choose a small number because Udacity simulator do not have much system bias. 
+
+To improve this PID control, i can increase the speed limit in the acceleration formula and using twiddle to choose the variable for Kp, Ki, Kd . it will better than choosing manually. When choosing manually, most likely choosing the round number. twiddle can give a better variable to improve the control.
+
+
 ---
 
 ## Dependencies
