@@ -47,7 +47,6 @@ double PID::acceleration(double cte, double speed, double angle){
 	acc = - ((fabs(cte)) / 3 ) - ((fabs(angle)) / 100) - ((speed - 80) / 100) + 0.2;
 	return acc;
 }
-<<<<<<< HEAD
 
 void PID::twiddle(){
 	double err = twiddle_error / target_steps;
@@ -98,33 +97,4 @@ void PID::twiddle(){
 	}
 }
 
-	
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
->>>>>>> dc0c625bb651f9dfbf4d4612b6222eda7428b042
