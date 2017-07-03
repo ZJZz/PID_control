@@ -38,10 +38,6 @@ double PID::TotalError() {
 
 double PID::acceleration(double cte, double speed, double angle){
 	double acc;
-	// if (fabs(cte) > 0.5 && fabs(angle) > 6.0 && speed > 40){
-	// 	acc = -0.8;
-	// }
-
 	cout << "cte: " << cte << "  | angle : " << angle << "   | speed : " << speed << endl;
 	acc = - ((fabs(cte)) / 3 ) - ((fabs(angle)) / 100) - ((speed - 70) / 100) + 0.2;
 	return acc;
