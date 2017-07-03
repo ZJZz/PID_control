@@ -9,7 +9,7 @@ public:
   double p_error;
   double i_error;
   double d_error;
-
+  double old_cte;
   /*
   * Coefficients
   */ 
@@ -41,6 +41,11 @@ public:
   * Calculate the total PID error.
   */
   double TotalError();
+
+  /*
+  * control the accelartion.
+   */
+  double acceleration(double cte, double speed, double angle);
 };
 
 #endif /* PID_H */

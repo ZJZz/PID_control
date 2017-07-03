@@ -4,6 +4,7 @@
 #include "PID.h"
 #include <math.h>
 
+using namespace std;
 // for convenience
 using json = nlohmann::json;
 
@@ -34,6 +35,17 @@ int main()
 
   PID pid;
   // TODO: Initialize the pid variable.
+  // pid.Init(1.0, 0.0004, 2.0)   << work just moving left and right too much
+  // pid.Init(0.4, 0.0004, 3.0)   << work , not going to the left and right that far and will slow down for turn 
+  // pid.Init(0.2, 0.0004, 3.0)   << work , with speed limit 70 and will slow down for turn 
+  // pid.Init(0.2, 0.0004, 4.0)   << work , with speed limit 80 and will slow down for turn 
+  // when speed limit is increase, kp need to increae so that it react to the turn faster, and dont need to stop that much
+  // but increase kp will cause the car left right too much, then kd need to increase at the same time.
+  // this one is the best for now, average speed is 40mph.
+  double init_kp = 0.22;
+  double init_ki = 0.0004;
+  double init_kd = 4.5;
+  pid.Init(init_kp, init_ki, init_kd);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -51,22 +63,34 @@ int main()
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
           double steer_value;
+          double throttle_value;
           /*
           * TODO: Calcuate steering value here, remember the steering value is
           * [-1, 1].
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
-          
+          pid.UpdateError(cte);
+          steer_value = pid.TotalError();
+          throttle_value = pid.acceleration(cte, speed, angle);
+          // cout << "speed" << speed << endl;
+
+
+
+
+
+
+
           // DEBUG
-          std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
+          std::cout << "CTE: " << cte << " Steering Value: " << steer_value << "acc: " << throttle_value << std::endl;
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
-          msgJson["throttle"] = 0.3;
+          msgJson["throttle"] = throttle_value;
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
           std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+          
         }
       } else {
         // Manual driving
